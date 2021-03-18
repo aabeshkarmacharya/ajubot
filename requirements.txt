@@ -1,0 +1,7 @@
+discord.py==1.6.0
+pandas==1.2.3
+python-dotenv==0.15.0
+requests==2.25.1
+requests-cache==0.5.2
+Scrapy==2.4.1
+PyNaCl==1.4.0
