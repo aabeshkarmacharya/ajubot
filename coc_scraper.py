@@ -1,4 +1,3 @@
-import json
 from collections.abc import Iterable
 from difflib import get_close_matches
 from typing import Sequence, Any, List, Iterator
@@ -10,7 +9,7 @@ import requests
 from scrapy import Selector
 
 
-def get_buildings():
+def get_buildings() -> dict:
     url = 'https://clashofclans.fandom.com/wiki/Buildings'
     response = requests.get(url)
     sel = Selector(text=response.text)
@@ -90,7 +89,11 @@ def get_cost(url):
     response = requests.get(url)
     sel = Selector(text=response.text)
 
-    table = sel.xpath('//table[tbody/tr[1]/th[1][normalize-space(text())="Level" and not(a)]]')[0].get()
+    table = sel.xpath(
+        '//table[tbody/tr[1]/th[1][(normalize-space(text())="Level" or normalize-space(text())="TH Level") and not(a) '
+        'and not(strong[normalize-space(text())="Town Hall"])] and not(contains(@class, '
+        '"mw-collapsible"))]')[
+        0].get()
     df = pd.read_html(table)[0]
     df = df.replace(np.nan, 'N/A', regex=True)
     df = df.applymap(str)
@@ -122,6 +125,13 @@ if __name__ == '__main__':
     troops = get_troops()
     buildings = get_buildings()
     troops_buildings = {**troops, **buildings}
-    name = match_name("Bomb", list(troops_buildings.keys()))
-    print(name)
-    print(troops_buildings[name])
+    name = match_name("Town hall", list(troops_buildings.keys()))
+    if name:
+        link = troops_buildings[name]
+        header, rows = get_cost(link)
+        print(header, rows)
+    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
+    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
+    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
+    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
+    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
