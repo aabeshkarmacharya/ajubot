@@ -53,6 +53,13 @@ class General(Cog):
             traceback.print_exc()
             await ctx.channel.send("```No matching army or building found.```")
 
+    @commands.command(name="ml")
+    async def missing_letters(self, ctx: Context, *, words: str = None):
+        if not words:
+            await ctx.channel.send("```Please enter some words.```")
+        else:
+            await ctx.channel.send(f"```missing letters {list(set('abcdefghijklmnopqrstuvwxyz') - set(words))}```")
+
     @commands.command()
     async def bark(self, ctx: Context):
         """
