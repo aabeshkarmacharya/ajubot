@@ -58,7 +58,8 @@ class General(Cog):
         if not words:
             await ctx.channel.send("```Please enter some words.```")
         else:
-            await ctx.channel.send(f"```missing letters {list(set('abcdefghijklmnopqrstuvwxyz') - set(words))}```")
+            await ctx.channel.send(
+                f"```missing letters {list(set('abcdefghijklmnopqrstuvwxyz') - set(words.lower()))}```")
 
     @commands.command()
     async def bark(self, ctx: Context):
