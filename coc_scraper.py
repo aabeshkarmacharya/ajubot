@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from difflib import get_close_matches
-from typing import Sequence, Any, List, Iterator
+from typing import Sequence, Any, List, Iterator, Sized, Union
+from urllib import parse
 from urllib.parse import urljoin
 
 import numpy as np
@@ -63,6 +64,24 @@ def create_table(rows: Sequence[Sequence[Any]]) -> str:
     return table_string
 
 
+def to_multi_columns(header: List[str], rows: List[Union[Iterable, Sized]], row_length=120):
+    max_combined_length = len("".join(header)) + 2 * len(header)
+    for row in rows:
+        combined_length = len("".join(row)) + 2 * len(row)
+        if combined_length > max_combined_length:
+            max_combined_length = combined_length
+    number_of_columns = row_length // max_combined_length
+
+    final_headers = header * number_of_columns
+    combined_rows = [rows[x:x + number_of_columns] for x in range(0, len(rows), number_of_columns)]
+    final_rows = []
+    for row in combined_rows:
+        final_rows.append([item for group in row for item in group])
+    final_rows.insert(0, final_headers)
+    final_table = create_table(final_rows)
+    return final_table
+
+
 def chunkify(lst, n):
     """Yield successive n-sized chunkify from lst."""
     for i in range(0, len(lst), n):
@@ -121,17 +140,9 @@ def minimize_string(s: str):
     return " ".join(new_words)
 
 
-if __name__ == '__main__':
-    troops = get_troops()
-    buildings = get_buildings()
-    troops_buildings = {**troops, **buildings}
-    name = match_name("Town hall", list(troops_buildings.keys()))
-    if name:
-        link = troops_buildings[name]
-        header, rows = get_cost(link)
-        print(header, rows)
-    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
-    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
-    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
-    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
-    # print(get_cost("https://clashofclans.fandom.com/wiki/Grand_Warden"))
+def get_coc_api_response(token, player_tag):
+    response = requests.get(f"https://api.clashofclans.com/v1/players/{parse.quote_plus(player_tag)}", headers={
+        "authorization": f"Bearer {token}"
+    })
+    print(response)
+    return response.json()

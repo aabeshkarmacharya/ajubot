@@ -28,6 +28,6 @@ async def on_ready():
 
 
 if __name__ == '__main__':
-    bot.add_cog(General())
+    bot.add_cog(General(os.getenv('COC_TOKEN')))
     logger.info(f"Starting COC BOT at {datetime.datetime.today().strftime('%d-%b-%Y %I:%M %p')}")
     bot.run(os.getenv('DISCORD_TOKEN'))

@@ -4,12 +4,13 @@ import operator as op
 import traceback
 from asyncio import sleep
 
-from discord import FFmpegPCMAudio, VoiceClient
+from discord import FFmpegPCMAudio, VoiceClient, Embed
 from discord.channel import VoiceChannel
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
 
-from coc_scraper import get_troops, match_name, get_cost, create_table, chunkify, get_buildings, minimize_string
+from coc_scraper import get_troops, match_name, get_cost, create_table, chunkify, get_buildings, minimize_string, \
+    get_coc_api_response, to_multi_columns
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,9 @@ class General(Cog):
     operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
                  ast.Div: op.truediv, ast.Pow: op.pow, ast.BitXor: op.xor,
                  ast.USub: op.neg, }
+
+    def __init__(self, coc_token):
+        self.coc_token = coc_token
 
     @commands.command()
     async def cost(self, ctx: Context, *, unit_name: str = None):
@@ -60,6 +64,28 @@ class General(Cog):
         else:
             await ctx.channel.send(
                 f"```missing letters {list(set('abcdefghijklmnopqrstuvwxyz') - set(words.lower()))}```")
+
+    @commands.command(name="hp")
+    async def profile(self, ctx: Context, player_tag: str):
+        if player_tag.startswith("#"):
+            response = get_coc_api_response(self.coc_token, player_tag)
+
+            embed = Embed(title=response.get("name"))
+            embed.add_field(name="Tag", value=response.get("tag"))
+            embed.add_field(name="TH Level", value=response.get("townHallLevel"))
+            embed.add_field(name="Trophies", value=response.get("trophies"))
+            embed.add_field(name="Clan Name", value=response.get("clan", {}).get("name"))
+            await ctx.send(embed=embed)
+            rows = []
+            header = ["Name", "Level"]
+
+            for troop in response.get("troops", {}):
+                rows.append((troop.get("name"), str(troop.get("level"))))
+            table = to_multi_columns(header, rows)
+            await ctx.channel.send("```" + table + "```")
+        else:
+            await ctx.channel.send(
+                f"```Player tag must start with '#' ex. '#LRJULGPL8'```")
 
     @commands.command()
     async def bark(self, ctx: Context):
