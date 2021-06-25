@@ -57,6 +57,12 @@ class General(Cog):
             traceback.print_exc()
             await ctx.channel.send("```No matching army or building found.```")
 
+    @commands.command(name="gift")
+    async def gift(self, ctx: Context, player_name: str = None):
+        await ctx.channel.send(
+            "```Suman Dahal has been awarded a free battle pass. Visit the link below to accept it. \n"
+            "shorturl.at/qxF69```")
+
     @commands.command(name="ml")
     async def missing_letters(self, ctx: Context, *, words: str = None):
         if not words:
